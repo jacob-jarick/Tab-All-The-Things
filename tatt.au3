@@ -1,6 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Outfile=tatt_x86.exe
 #AutoIt3Wrapper_Outfile_x64=tatt_x64.exe
+#AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Compile_Both=y
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Add_Constants=n
@@ -43,7 +44,7 @@ TraySetState()
 
 
 
-Global $version = "1.0.1"
+Global $version = "1.0.3"
 Global $Form1 = GUICreate("Tab all the things" & $version, 800, 40, -1, -1, $WS_OVERLAPPEDWINDOW)
 
 Global $filemenu = GUICtrlCreateMenu("File")
@@ -82,17 +83,26 @@ Exit
 
 Func window_check()
 	$iMax = UBound($windows)
+	If $iMax = 1 Then
+		Return
+	EndIf
+
 	Local $need_to_redraw = 0
+	Local $array_copy = $windows
+
 	For $i = 1 To $iMax - 1; subtract 1 from size to prevent an out of bounds error
 		If WinExists(HWnd($windows[$i]), "") = 0 Then
 			;MsgBox($MB_SYSTEMMODAL, "Window Deleted", $windows[$i], 5)
-			_ArrayDelete($windows, $i)
+			_ArrayDelete($array_copy, $i)
 			$need_to_redraw = 1
 		EndIf
+
 	Next
 
 	If $need_to_redraw = 1 Then
+		$windows = $array_copy
 		draw_menu()
+		window_position()
 	EndIf
 
 EndFunc   ;==>window_check
