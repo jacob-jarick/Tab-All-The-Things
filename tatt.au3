@@ -44,7 +44,7 @@ TraySetState()
 
 
 
-Global $version = "1.0.3"
+Global $version = "1.0.4"
 Global $Form1 = GUICreate("Tab all the things" & $version, 800, 40, -1, -1, $WS_OVERLAPPEDWINDOW)
 
 Global $filemenu = GUICtrlCreateMenu("File")
@@ -95,6 +95,11 @@ Func window_check()
 			;MsgBox($MB_SYSTEMMODAL, "Window Deleted", $windows[$i], 5)
 			_ArrayDelete($array_copy, $i)
 			$need_to_redraw = 1
+		EndIf
+
+		Local $iState = WinGetState(HWnd($windows[$i]))
+		If BitAND($iState, 16) Then
+			WinSetState(HWnd($windows[$i]), "", @SW_RESTORE)
 		EndIf
 
 	Next
