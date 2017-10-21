@@ -22,7 +22,7 @@
 #include <WinAPI.au3>
 #include <WinAPIRes.au3>
 
-Global $version = "1.0.8"
+Global $version = "1.0.9"
 
 Global $cascade = 1
 Global $window_h = 600
@@ -143,6 +143,11 @@ Func jPos()
 	$jPos = MouseGetPos()
 	Sleep(50)
 	Local $target = String(WinGetHandle("[ACTIVE]"))
+
+	If String($Form1) = $target Then
+		Return
+	EndIf
+
 	_ArrayPush($windows, $target)
 	Local $aArrayUnique = _ArrayUnique($windows) ; Use default parameters to create a unique array.
 	$windows = $aArrayUnique
