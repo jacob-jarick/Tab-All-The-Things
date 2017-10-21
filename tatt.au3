@@ -22,7 +22,7 @@
 #include <WinAPI.au3>
 #include <WinAPIRes.au3>
 
-Global $version = "1.0.7"
+Global $version = "1.0.8"
 
 Global $cascade = 1
 Global $window_h = 600
@@ -64,11 +64,35 @@ While 1
 	Sleep(100)
 	window_position()
 	window_check()
-	Local $aPos = WinGetPos($Form1)
-	WinMove($Form1, "", $aPos[0], $aPos[1], $aPos[2], $parent_h)
+	parent_check_pos()
 WEnd
 
 Exit
+
+Func parent_check_pos()
+	Local $aPos = WinGetPos($Form1)
+	Local $x = $aPos[0]
+	Local $y = $aPos[1]
+	Local $w = $aPos[2]
+	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	Local $iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
+
+	If ($x + $w) > $iFullDesktopWidth Then
+		$x = $iFullDesktopWidth - $w
+	EndIf
+	If $x < 0 Then
+		$x = 0
+	EndIf
+
+	If ($y + $parent_h) > $iFullDesktopHeight Then
+		$y = $iFullDesktopHeight - $parent_h
+	EndIf
+	If $y < 0 Then
+		$y = 0
+	EndIf
+
+	WinMove($Form1, "", $x, $y, $w, $parent_h)
+EndFunc   ;==>parent_check_pos
 
 Func window_check()
 	$iMax = UBound($windows)
@@ -176,7 +200,6 @@ Func window_position()
 		If ($ypos + $h) > $iFullDesktopHeight Then
 			$h = $iFullDesktopHeight - $ypos
 			If $h < $window_h_min Then
-				$h = $window_h_min
 				$cascade_y_inc = 0
 			EndIf
 		EndIf
@@ -185,7 +208,6 @@ Func window_position()
 		If ($xpos + $w) > $iFullDesktopWidth Then
 			$w = $iFullDesktopWidth - $xpos
 			If $w < $window_w_min Then
-				$w = $window_w_min
 				$cascade_x_inc = 0
 			EndIf
 		EndIf
