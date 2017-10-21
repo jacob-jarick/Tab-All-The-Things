@@ -20,6 +20,12 @@
 #include <MsgBoxConstants.au3>
 #include <WindowsConstants.au3>
 #include <Array.au3>
+#include <WinAPI.au3>
+#include <WinAPIRes.au3>
+
+Global $cursor = @ScriptDir & "\arcoiris 2.cur"
+
+FileInstall( "D:\git\tab all the things\Tab-All-The-Things\arcoiris 2.cur", $cursor, 0 )
 
 Opt("GUIOnEventMode", 1)
 
@@ -34,6 +40,7 @@ TrayCreateItem("Feature List: OFF")
 TrayCreateItem("")
 
 TraySetState()
+
 
 
 Global $version = "1.0"
@@ -89,11 +96,15 @@ func gui_check()
 EndFunc
 
 Func window_info()
+	Local $hPrev = _WinAPI_CopyCursor(_WinAPI_LoadCursor(0, 32512))
+	_WinAPI_SetSystemCursor(_WinAPI_LoadCursorFromFile(@ScriptDir & "\arcoiris 2.cur"),32512)
 	While 1
 		If _IsPressed("01") Then
 			ExitLoop
 		EndIf
 	WEnd
+	_WinAPI_SetSystemCursor($hPrev,32512)
+
 	jPos()
 	draw_menu()
 	;MsgBox(0, "Details", $jPos[0] & "," & $jPos[1] & "," & WinGetHandle("[ACTIVE]"))
@@ -134,7 +145,12 @@ Func window_position()
 		Return
 	EndIf
 
+	$iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	$iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
+
 	Local $aPos = WinGetPos($Form1)
+
+	Local $cascade_local = $cascade
 
 	Local $cascade_x = 0
 	Local $cascade_y = 0
@@ -145,7 +161,7 @@ Func window_position()
 		Local $xpos = $aPos[0]
 		Local $ypos = $aPos[1]+$aPos[3]
 
-		If $cascade = 1 Then
+		If $cascade_local = 1 Then
 			$xpos += $cascade_x
 			$ypos += $cascade_y
 
@@ -153,7 +169,13 @@ Func window_position()
 			$cascade_y += 40
 		EndIf
 
-		WinMove(HWnd($windows[$i]), "", $xpos, $ypos, $aPos[2], $window_h)
+		$h = $window_h
+		if ($ypos + $window_h) > $iFullDesktopHeight Then
+			$h = $iFullDesktopHeight - $window_h
+			$cascade_local = 0
+		EndIf
+
+		WinMove(HWnd($windows[$i]), "", $xpos, $ypos, $aPos[2], $h)
 	Next
 EndFunc
 
