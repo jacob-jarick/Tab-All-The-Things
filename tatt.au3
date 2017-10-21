@@ -22,10 +22,13 @@
 #include <WinAPI.au3>
 #include <WinAPIRes.au3>
 
-Global $version = "1.0.6"
+Global $version = "1.0.7"
 
 Global $cascade = 1
 Global $window_h = 600
+Global $window_h_min = 200
+Global $window_w_min = 400
+
 Global $windows[] = []
 Global $parent_h = 60
 
@@ -156,6 +159,8 @@ Func window_position()
 	Local $cascade_x_inc = 33
 	Local $cascade_y_inc = 33
 
+	Local $window_w = $aPos[2]
+
 	For $i = 1 To $iMax - 1;
 		Local $xpos = $aPos[0]
 		Local $ypos = $aPos[1] + $aPos[3]
@@ -168,12 +173,24 @@ Func window_position()
 		EndIf
 
 		$h = $window_h
-		If ($ypos + $window_h) > $iFullDesktopHeight Then
-			$h = $iFullDesktopHeight - $window_h
-			$cascade_y_inc = 0
+		If ($ypos + $h) > $iFullDesktopHeight Then
+			$h = $iFullDesktopHeight - $ypos
+			If $h < $window_h_min Then
+				$h = $window_h_min
+				$cascade_y_inc = 0
+			EndIf
 		EndIf
 
-		WinMove(HWnd($windows[$i]), "", $xpos, $ypos, $aPos[2], $h)
+		$w = $window_w
+		If ($xpos + $w) > $iFullDesktopWidth Then
+			$w = $iFullDesktopWidth - $xpos
+			If $w < $window_w_min Then
+				$w = $window_w_min
+				$cascade_x_inc = 0
+			EndIf
+		EndIf
+
+		WinMove(HWnd($windows[$i]), "", $xpos, $ypos, $w, $h)
 	Next
 EndFunc   ;==>window_position
 
