@@ -13,8 +13,6 @@
 
 #include <GUIConstantsEx.au3>
 #include "OnEventFunc.au3"; assuming the udf is in the script dir
-
-
 #include <GuiEdit.au3>
 #include <file.au3>
 #include <Misc.au3>
@@ -24,31 +22,25 @@
 #include <WinAPI.au3>
 #include <WinAPIRes.au3>
 
-Global $cursor = @ScriptDir & "\arcoiris 2.cur"
+Global $version = "1.0.6"
 
+Global $cascade = 1
+Global $window_h = 600
+Global $windows[] = []
+Global $parent_h = 60
+
+Global $cursor = @ScriptDir & "\arcoiris 2.cur"
 FileInstall("D:\git\tab all the things\Tab-All-The-Things\arcoiris 2.cur", $cursor, 0)
 
 Opt("GUIOnEventMode", 1)
-
 Opt("TrayOnEventMode", 1)
-Opt("TrayMenuMode", 1)
 
 Opt("TrayAutoPause", 0); Script will not be paused when clicking the tray icon.
-TrayCreateItem("Test1")
-TRaySetOnEventA(-1, "TrayIt1")
-TrayCreateItem("")
-TrayCreateItem("Feature List: OFF")
-TrayCreateItem("")
-
 TraySetState()
 
-
-
-Global $version = "1.0.4"
-Global $Form1 = GUICreate("Tab all the things" & $version, 800, 40, -1, -1, $WS_OVERLAPPEDWINDOW)
+Global $Form1 = GUICreate("Tab all the things" & $version, 800, $parent_h, -1, -1, $WS_OVERLAPPEDWINDOW)
 
 Global $filemenu = GUICtrlCreateMenu("File")
-
 Global $addw = GUICtrlCreateMenuItem("Add Window", $filemenu)
 SetOnEventA($addw, "window_info")
 
@@ -57,26 +49,20 @@ SetOnEventA($menuexit, "quit")
 
 Global $windowmenu = GUICtrlCreateMenu("Windows")
 
-Global $cascade = 1
-
-
-Global $window_h = 600
-Global $windows[] = []
-
 WinSetOnTop($Form1, "", $WINDOWS_ONTOP)
 
 Local $filemenu, $fileitem, $msg, $exititem, $line, $helpitem, $jPos;
 
 SetOnEventA($GUI_EVENT_CLOSE, "quit")
 
-
 GUISetState(@SW_SHOW)
 
-Local $count = 0;
 While 1
 	Sleep(100)
 	window_position()
 	window_check()
+	Local $aPos = WinGetPos($Form1)
+	WinMove($Form1, "", $aPos[0], $aPos[1], $aPos[2], $parent_h)
 WEnd
 
 Exit
@@ -90,7 +76,7 @@ Func window_check()
 	Local $need_to_redraw = 0
 	Local $array_copy = $windows
 
-	For $i = 1 To $iMax - 1; subtract 1 from size to prevent an out of bounds error
+	For $i = 1 To $iMax - 1
 		If WinExists(HWnd($windows[$i]), "") = 0 Then
 			;MsgBox($MB_SYSTEMMODAL, "Window Deleted", $windows[$i], 5)
 			_ArrayDelete($array_copy, $i)
@@ -124,7 +110,6 @@ Func window_info()
 
 	jPos()
 	draw_menu()
-	;MsgBox(0, "Details", $jPos[0] & "," & $jPos[1] & "," & WinGetHandle("[ACTIVE]"))
 EndFunc   ;==>window_info
 
 Func jPos()
@@ -147,14 +132,14 @@ Func draw_menu()
 		$title = WinGetTitle(HWnd($windows[$i]))
 		Local $item = GUICtrlCreateMenuItem($title, $windowmenu)
 		Local $tmp = $windows[$i]
-		SetOnEventA($item, "funcone", $paramByVal, $tmp)
+		SetOnEventA($item, "raise", $paramByVal, $tmp)
 	Next
 EndFunc   ;==>draw_menu
 
-Func funcone($target)
+Func raise($target)
 	MsgBox($MB_SYSTEMMODAL, "target", $target, 10)
 	WinActivate(HWnd($target))
-EndFunc   ;==>funcone
+EndFunc   ;==>raise
 
 Func window_position()
 	$iMax = UBound($windows)
@@ -162,34 +147,30 @@ Func window_position()
 		Return
 	EndIf
 
-	$iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
-	$iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
-
+	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	Local $iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
 	Local $aPos = WinGetPos($Form1)
-
 	Local $cascade_local = $cascade
-
 	Local $cascade_x = 0
 	Local $cascade_y = 0
+	Local $cascade_x_inc = 33
+	Local $cascade_y_inc = 33
 
 	For $i = 1 To $iMax - 1;
-		;MsgBox($MB_SYSTEMMODAL, "target", $windows[$i], 10)
-
 		Local $xpos = $aPos[0]
 		Local $ypos = $aPos[1] + $aPos[3]
 
 		If $cascade_local = 1 Then
 			$xpos += $cascade_x
 			$ypos += $cascade_y
-
-			$cascade_x += 40
-			$cascade_y += 40
+			$cascade_x += $cascade_x_inc
+			$cascade_y += $cascade_y_inc
 		EndIf
 
 		$h = $window_h
 		If ($ypos + $window_h) > $iFullDesktopHeight Then
 			$h = $iFullDesktopHeight - $window_h
-			$cascade_local = 0
+			$cascade_y_inc = 0
 		EndIf
 
 		WinMove(HWnd($windows[$i]), "", $xpos, $ypos, $aPos[2], $h)
