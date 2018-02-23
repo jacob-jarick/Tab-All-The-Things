@@ -7,11 +7,12 @@ Func get_w()
 
 	If $hMonitor <> 0 Then
 		Dim $arMonitorInfos[4]
-		If GetMonitorInfos($hMonitor, $arMonitorInfos) Then _
-				MsgBox(0, "Monitor-Infos", "Rect-Monitor" & @TAB & ": " & $arMonitorInfos[0] & @LF & _
-				"Rect-Workarea" & @TAB & ": " & $arMonitorInfos[1] & @LF & _
-				"PrimaryMonitor?" & @TAB & ": " & $arMonitorInfos[2] & @LF & _
-				"Devicename" & @TAB & ": " & $arMonitorInfos[3])
+		Dim $info[4]
+		If GetMonitorInfos($hMonitor, $arMonitorInfos, $info) Then _
+				MsgBox(0, "Monitor-Infos", "x" & @TAB & ": " & $info[0] & @LF & _
+				"y" & @TAB & ": " & $info[1] & @LF & _
+				"w" & @TAB & ": " & $info[2] & @LF & _
+				"h" & @TAB & ": " & $info[3])
 	EndIf
 
 
@@ -26,7 +27,7 @@ Func GetMonitorFromPoint($x, $y)
 EndFunc   ;==>GetMonitorFromPoint
 
 
-Func GetMonitorInfos($hMonitor, ByRef $arMonitorInfos)
+Func GetMonitorInfos($hMonitor, ByRef $arMonitorInfos, ByRef $info)
 	Local $stMONITORINFOEX = DllStructCreate("dword;int[4];int[4];dword;char[" & 32 & "]")
 	DllStructSetData($stMONITORINFOEX, 1, DllStructGetSize($stMONITORINFOEX))
 
@@ -34,16 +35,14 @@ Func GetMonitorInfos($hMonitor, ByRef $arMonitorInfos)
 			"hwnd", $hMonitor, _
 			"ptr", DllStructGetPtr($stMONITORINFOEX))
 	If $nResult[0] = 1 Then
-		$arMonitorInfos[0] = DllStructGetData($stMONITORINFOEX, 2, 1) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 2, 2) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 2, 3) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 2, 4)
-		$arMonitorInfos[1] = DllStructGetData($stMONITORINFOEX, 3, 1) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 3, 2) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 3, 3) & ";" & _
-				DllStructGetData($stMONITORINFOEX, 3, 4)
-		$arMonitorInfos[2] = DllStructGetData($stMONITORINFOEX, 4)
-		$arMonitorInfos[3] = DllStructGetData($stMONITORINFOEX, 5)
+		Local $xpos = DllStructGetData($stMONITORINFOEX, 3, 1)
+		Local $ypos = DllStructGetData($stMONITORINFOEX, 3, 2)
+		Local $w = DllStructGetData($stMONITORINFOEX, 3, 3)
+		Local $h = DllStructGetData($stMONITORINFOEX, 3, 4)
+		$info[0] = $xpos
+		$info[1] = $ypos
+		$info[2] = $w
+		$info[3] = $h
 	EndIf
 
 	Return $nResult[0]
